@@ -10,6 +10,6 @@ class Schedule:
         self.num_of_machines = len(machines)
         self.machines = machines
         self.jobs = jobs
-        temp = [x.min_time for x in jobs]
-        self.min_time = min(temp)
-        self.max_time = sum(temp)
+        time_list = [x.min_time for x in jobs]
+        self.min_time = min(time_list)
+        self.max_time = sum(time_list)

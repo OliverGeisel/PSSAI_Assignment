@@ -20,6 +20,7 @@ class Machine:
         # Todo insert a step and add idle plus merge to one
         pass
 
+    @DeprecationWarning
     def remove_double_idle(self):
         for index, step in enumerate(self.work):
             if step.idle and self.work[index + 1].idle:
@@ -28,3 +29,6 @@ class Machine:
                 self.work.pop(index)
                 self.work.insert(index, new_idle)
                 break
+
+    def split_None(self):
+        pass

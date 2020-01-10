@@ -1,0 +1,27 @@
+0. Der längste Job zuerst
+und dann der zweitlängste usw.
+
+1. 1. Job zuerst dann zweiter usw.
+ 1. Maschine zuerst zuweisen und dann darauf weiter zuweisen
+
+
+Ablauf:
+ 1. neues max bestimmen.
+ 2. Neuen Plan erstellen
+
+Optimierungs-Ideen
+- Tabu-search- für 1. Teil des Jobs (diesen swappen)
+- Letzen Teil finden und versuchen vor zu ziehen (BSP) J1
+  - J1 tauschen mit J2
+  - J2 neu orden
+  - J1 neu anpassen
+  - J3 unbreührt lassen
+  - (Idee Bei kollision mit J3 tausch mit J1 berücksichtigen und J3 auch neu ordnen)
+- bei gleicher Zeit troztdem tauschen
+- Job mit viel leerlauf
+
+- Leerlauf der Maschine beachten (Nicht als wichtig erachtet)
+
+
+isPerfect() als Attribut in den Job
+isContinous() 
