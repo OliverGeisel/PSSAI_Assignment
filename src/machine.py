@@ -1,4 +1,5 @@
 from src.job import Step
+from src.timeStep import TimeStep
 
 
 class Machine:
@@ -16,8 +17,11 @@ class Machine:
         self.end_time += gap + step.time
         self.remove_double_idle()
 
-    def insert(self, step, duration: int) -> None:
-        # Todo insert a step and add idle plus merge to one
+    def insert(self, step: Step, start_time: int) -> None:
+
+        if self.end_time < start_time + step.time:
+            self.append_empty_timeSteps(start_time + step.time - self.end_time)
+        self.setStep(start_time, step.time)
         pass
 
     @DeprecationWarning
@@ -32,3 +36,15 @@ class Machine:
 
     def split_None(self):
         pass
+
+    def append_empty_timeSteps(self, timeSteps):
+        for i in range(timeSteps):
+            self.work.append(TimeStep())
+
+    def setStep(self, start_time, time):
+        for i in range(time):
+            self.work[start_time + i].type = True
+
+    def removeStep(self, start_time, time):
+        for i in range(time):
+            self.work[start_time + i].type = False
