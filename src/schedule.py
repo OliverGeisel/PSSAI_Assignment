@@ -6,7 +6,7 @@ from src.machine import Machine
 
 class Schedule:
 
-    def __int__(self, jobs: List[Job], machines: List[Machine]):
+    def __init__(self, jobs: List[Job], machines: List[Machine]):
         self.num_of_machines = len(machines)
         self.machines = machines
         self.jobs = jobs
