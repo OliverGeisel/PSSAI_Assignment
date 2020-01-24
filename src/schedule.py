@@ -1,5 +1,5 @@
 from typing import List
-
+import copy
 from src.job import Job
 from src.machine import Machine
 
@@ -13,3 +13,6 @@ class Schedule:
         time_list = [x.min_time for x in jobs]
         self.min_time = min(time_list)
         self.max_time = sum(time_list)
+
+    def copy(self):
+        return copy.deepcopy(self)
