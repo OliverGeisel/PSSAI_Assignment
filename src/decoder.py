@@ -34,4 +34,4 @@ def parse_tasks(path_of_file: str) -> List[Task]:
     return tasks
 
 
-parse_tasks(sys.argv[1])
+#parse_tasks(sys.argv[1])
