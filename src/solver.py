@@ -1,5 +1,5 @@
+from src.job import Step
 from src.schedule import Schedule
-from src.job import Job
 
 last_schedules = None
 
@@ -9,8 +9,7 @@ stc = 20
 # gives back the job with whom the collision appeared
 
 
-def detect_collision(schedule: Schedule, step: schedule.jobs.steps) -> schedule.jobs.steps:
-
+def detect_collision(schedule: Schedule, step: Step) -> Step:
     for mw in schedule.machines[step.machine_num].work:
         if step.start_time <= mw.start_time:
             if mw.start_time < step.start_time + step.time:
@@ -19,6 +18,7 @@ def detect_collision(schedule: Schedule, step: schedule.jobs.steps) -> schedule.
             if mw.start_time < step.start_time + step.time:
                 return mw
     return None
+
 
 # makes sure that all steps of one job are not starting before last one ended
 
@@ -76,24 +76,30 @@ def solve(schedule: Schedule):
 
     # finde zuletzt endenden job
     # funktioniert garantiert nicht
-    id_longest_machine = max(schedule.machines.end_time).id
-    latest_job = id_longest_machine.work[id_longest_machine.end_time]
+    origin_schedule = schedule.copy()
+    latest_job = max(schedule.machines).work[-1].job
+    # latest_job = id_longest_machine.work[id_longest_machine.end_time]
 
     # finde seinen ersten step der nicht am Anfang des schedules liegt
     first_step = latest_job.steps[0]
 
-    if first_step.start_time == 0:
-        first_step = latest_job.steps[1]
+    # versuche den zu tauschen
+    if first_step.start_time != 0:
+        index_of_step_to_change = schedule.machines.work.index(first_step) - 1
+        # kann das funktionieren? Wenn der  first_step nicht die Zeit null hat aber doch als erstes anfängt
+        step_to_change = schedule.machines[first_step.machine_num].work[index_of_step_to_change]
+        first_step.start_time = step_to_change.start_time
+        step_to_change.start_time = first_step.start_time + first_step.time
+        # Kopiere altes Schedule und speichere das neue
+        # ist origin_schedule
+        # stelle konsistenz wieder her
+        make_consistent(schedule)
 
-    # versuche passenden step zu tauschen
-    # merke die getauschten steps
-    # setStep??
-    step_to_change = schedule.machines[first_step.machine_num].work[schedule.machines.work.index(
-        first_step)-1]
-    first_step.start_time = step_to_change.start_time
-    step_to_change.start_time = first_step.start_time + first_step.time
-    # stelle konsistenz wieder her
-    make_consistent(schedule)
+    else:
+        pass
+
+    # speichere die zuletzt getauschten Steps (für)
+
     # schaue auch nach großen Lücken (vielleicht entstanden durch Konsistenz)
     gapcheck(schedule)
     # vergleiche länge von schedules
@@ -116,4 +122,4 @@ def initialize(schedule: Schedule):
                 s.start_time = col.start_time + col.time
                 col = detect_collision(schedule, s)
             # add step to schedule
-            schedule.machines[s.machine_num].append(s)  # ???, s.start_time
+            schedule.machines[s.machine_num].insert(s, s.start_time, j)  # ???
