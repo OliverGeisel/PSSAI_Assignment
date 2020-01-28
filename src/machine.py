@@ -10,6 +10,7 @@ class Machine:
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
 
+    @DeprecationWarning
     def append(self, step: Step, gap: int = 0) -> None:
         if not gap:
             idle = Step(gap, self.id, idle=True)

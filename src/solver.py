@@ -58,7 +58,7 @@ def solve(schedule: Schedule):
     # Es fehlen weitere Abbruchbedingungen
 
     # if all jobs are perfectly fitted return the schedule
-    if schedule.jobs.isperfect():
+    if schedule.jobs.is_perfect():
         return schedule
 
     # Es fehlt die Tiefe eines Pfades
