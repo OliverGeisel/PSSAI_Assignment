@@ -9,6 +9,7 @@ class Machine:
         self.work = list()
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
+        self.blocked_steps = list(list(Step, int))
 
     @DeprecationWarning
     def append(self, step: Step, gap: int = 0) -> None:
@@ -52,7 +53,7 @@ class Machine:
         for i in range(step.time):
             # Check ob bereits ein Job an der Stelle ist
             if len(self.work) <= start_time and self.work[start_time + i].step_num != -1:
-                raise CollisionInScheduleException(f"A Error occurred! The step {start_time + i} in machine {self.id}"
+                raise CollisionInScheduleException(f"An Error occurred! The step {start_time + i} in machine {self.id}"
                                                    f" is already placed! Job {self.work[start_time + i]} is there but"
                                                    f" {job} is wanted.")
             self.work[start_time + i] = time_step
@@ -64,6 +65,27 @@ class Machine:
     def __lt__(self, other):
         return other.end_time - self.end_time
 
+    def switch_steps(self, start_time1, time1, start_time2, time2):
+        self.removeStep(self,start_time1, time1)
+        self.removeStep(self,start_time2, time2)
+        self.setStep(self, start_time1,time1)
+        self.setStep(self, start_time2,time2)
+        pass
+
+                    
+    def block_step(self, step: Step, time):
+        self.blocked_steps.append([job, time])
+
+    def unblock_steps(self):
+        for x in self.blocked_steps:
+            x[1] = x[1] -1
+            if x[1] == 0:
+                self.blocked_steps.remove(x)
+
+    def is_blocked(self, step: Step):
+        for x in self.blocked_steps:
+            if x[0] == step:
+                return True
 
 class CollisionInScheduleException(Exception):
 

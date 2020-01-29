@@ -40,4 +40,3 @@ class Schedule:
             interval_of_step= machine.work[step.start_time: step.start_time + step.time]
             if len([x for x in interval_of_step if x.job is not None]):
                 pass
-                
