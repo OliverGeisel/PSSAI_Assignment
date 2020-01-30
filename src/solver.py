@@ -34,7 +34,7 @@ def gapcheck(schedule: Schedule):
                 else:
                     new_start = s.step.parent.start_time + s.step.parent.time
 
-                current_machine.setStep(new_start, s.step, s.job)
+                current_machine.insert(new_start, s.step, s.job)
 
     # for m in schedule.machines:
     #     for mw in m.work:
@@ -86,7 +86,7 @@ def solve(schedule: Schedule):
         # block every first job
         for j in schedule.jobs:
             first_step = j.steps[0]
-            if first_step.start_time == 0 and !first_step.is_blocked:
+            if first_step.start_time == 0 and not first_step.is_blocked:
                 first_step.is_blocked = True
                 first_step.time_blocked = 1
 
@@ -118,7 +118,7 @@ def solve(schedule: Schedule):
         schedule.machines[machine_were_on].switch_steps(
             work_to_change, first_time_step)
         # remember the swiched steps
-        for x in [first_work_step, work_to_change]:
+        for x in [first_time_step, work_to_change]:
             x.step.is_blocked = True
             x.step.time_blocked = block_time
 
@@ -180,4 +180,4 @@ def initialize(schedule: Schedule):
                 col = detect_collision(schedule, s)
             # add step to schedule
             schedule.machines[s.machine_num].insert(
-                s, s.start_time, schedule.machines[s.machine_num].work[].job)  # ???
+                s, s.start_time, schedule.machines[s.machine_num].work[0].job)  # ???

@@ -1,9 +1,8 @@
 from src.job import Step, Job
-from src.timeStep import TimeStep
+from src.timeStep import TimeStep, idle_timeStep
 
 
 class Machine:
-    idle_timeStep = TimeStep(None, -1, None)
 
     def __init__(self, id: int):
         self.work = list()
@@ -19,15 +18,16 @@ class Machine:
         self.end_time += gap + step.time
         self.remove_double_idle()
 
-    def insert(self, step: Step, start_time: int, job: Job) -> None:
+    def insert(self,  start_time: int, step: Step, job: Job) -> None:
         if self.end_time < start_time + step.time:
             self.append_empty_timeSteps(start_time + step.time - self.end_time)
         self.setStep(start_time, step, job)
         self.end_time = len(self.work)
 
     def __remove_idle_at_end(self):
-        while self.work[-1] is Machine.idle_timeStep:
+        while self.work[-1] is idle_timeStep:
             self.work.pop()
+        self.end_time
 
     @DeprecationWarning
     def remove_double_idle(self):
@@ -44,9 +44,9 @@ class Machine:
 
     def append_empty_timeSteps(self, timeSteps):
         for i in range(timeSteps):
-            self.work.append(Machine.idle_timeStep)
+            self.work.append(idle_timeStep)
 
-    def setStep(self, start_time, step: Step, job: Job):
+    def setStep(self, start_time: int, step: Step, job: Job):
         step_num = job.steps.index(step) + 1
         time_step = TimeStep(step, step_num, job)
         for i in range(step.time):
@@ -60,7 +60,7 @@ class Machine:
 
     def removeStep(self, start_time, time):
         for i in range(time):
-            self.work[start_time + i] = Machine.idle_timeStep
+            self.work[start_time + i] = idle_timeStep
 
     def get_start_of_step(self, step: Step):
         for index, time_step in enumerate(self.work):
@@ -73,8 +73,8 @@ class Machine:
     def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
         self.removeStep(timestep1.step.start_time, timestep1.step.time)
         self.removeStep(timestep2.step.start_time, timestep2.step.time)
-        self.setStep(timestep1.step.start_time, timestep1.step.time, timestep1.job)
-        self.setStep(timestep2.step.start_time, timestep2.step.time, timestep2.job)
+        self.insert(timestep1.step.time, timestep1.step.start_time,  timestep1.job)
+        self.insert(timestep2.step.time, timestep2.step.start_time,  timestep2.job)
 
 
 
