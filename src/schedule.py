@@ -68,3 +68,6 @@ class Schedule:
             schedule.append("\n")
         return f"The schedule for task looks like:\n" \
                f"{''.join(schedule)}"
+
+    def __lt__(self, other):
+        return min(self.machines) < min(other.machines)

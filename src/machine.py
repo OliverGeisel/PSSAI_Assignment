@@ -51,6 +51,9 @@ class Machine:
     def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
         self.removeStep(timestep1.step.start_time, timestep1.step.time)
         self.removeStep(timestep2.step.start_time, timestep2.step.time)
+        start_time_cache = timestep1.step.start_time
+        timestep1.step.start_time = timestep2.step.start_time
+        timestep2.step.start_time = start_time_cache
         self.insert(timestep1.step.time, timestep1.step.start_time,  timestep1.job)
         self.insert(timestep2.step.time, timestep2.step.start_time,  timestep2.job)
 

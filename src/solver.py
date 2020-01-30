@@ -43,7 +43,7 @@ def gapcheck(schedule: Schedule):
     #             # if there is a gap where the step fits in move it
     #             gapstep = workbefore if mw.parent.start_time + \
     #                 mw.parent.time < workbefore.start_time else mw.parent
-    #             schedule.machines[mw.machine_num].setStep(m, gapstep.start_time, gapstep,  )# job vom step )
+    #             schedule.machines[mw.machine_num].insert(m, gapstep.start_time, gapstep,  )# job vom step )
 
 
 def solve(schedule: Schedule):
@@ -53,13 +53,14 @@ def solve(schedule: Schedule):
         # Es fehlen weitere Abbruchbedingungen
 
         # if all jobs are perfectly fitted return the schedule
-        if schedule.jobs.is_perfect():
-            return schedule
+        for x in schedule.jobs:
+            count = 0
+            if x.is_perfect:
+                count = count + 1
+            if count == len(schedule.jobs):
+                return schedule
 
         # Es fehlt die Tiefe eines Pfades; rekursion?
-
-        # work with a new copy of the schedule
-        origin_schedule = schedule.copy()
 
         # if the length of schedules is going to be too long delete first element
         if len(last_schedules) >= stc:
@@ -67,12 +68,11 @@ def solve(schedule: Schedule):
 
         # Vergleiche Längen der schedules
         shortest_schedule = min(last_schedules)
-        min_known_len = 0
-        if shortest_schedule <= min_known_len:
+        if shortest_schedule <= schedule.min_time:
             return shortest_schedule
 
         # append the schedule to list of schedules to compare
-        last_schedules.append(origin_schedule)
+        last_schedules.append(schedule.copy)
 
         # maybe unblock jobs
         for j in schedule.jobs:
@@ -101,13 +101,12 @@ def solve(schedule: Schedule):
         while schedule.machines[first_step.machine_num].work[first_step.start_time].step.is_blocked:
             step_number = step_number + 1
             first_step = latest_job.steps[step_number]
-            # if you got to the end change strategie
+            # if you got to the end of job change strategie
             if first_step == latest_job.steps[latest_job.steps.len()]:
                 # search for another step to change
                 pass
-            pass
 
-        # versuche den ersten step zu tauschen
+        # versuche den gefundenen step zu tauschen
 
         machine_were_on = first_step.machine_num
         first_time_step = schedule.machines[machine_were_on].work[first_step.start_time].step
@@ -124,60 +123,3 @@ def solve(schedule: Schedule):
 
         # make schedule as condense as possible
         gapcheck(schedule)
-
-
-# Methode wird nicht hier benötigt
-# ------------------------------------------------------------------------------------
-
-
-# gives back the job with whom the collision appeared
-
-
-def detect_collision(schedule: Schedule, step: Step) -> Step:
-    for mw in schedule.machines[step.machine_num].work:
-        if step.start_time <= mw.start_time:
-            if mw.start_time < step.start_time + step.time:
-                return mw
-        elif step.start_time < mw.start_time + mw.time:
-            if mw.start_time < step.start_time + step.time:
-                return mw
-    return None
-
-
-# makes sure that all steps of one job are not starting before last one ended
-
-# Methode wird nicht benötigt
-# ------------------------------------------------------------------------------------
-def make_consistent(schedule: Schedule):
-    for j in schedule.jobs:
-        for s in j.steps:
-            next_step = j.steps[j.steps.index(s) + 1]
-            if s.start_time + s.time > next_step.start_time:
-                next_step.start_time = s.start_time + s.time
-                collision_step = detect_collision(schedule, next_step)
-                while collision_step:
-                    # as long as there is a collision with a second step move the first behind
-                    # not necessarily the wanted behaviour - to change later
-                    s.start_time = collision_step.start_time + collision_step.time
-                    collision_step = detect_collision(schedule, s)
-
-
-def initialize(schedule: Schedule):
-    # Sort the jobs of the schedule to get longest first
-    # Wie was genau ich sortieren muss weiß ich nicht
-    schedule.jobs.sort(reverse=True)
-
-    for j in schedule.jobs:
-        for s in j.steps:
-            # update start time
-            # Kann es hier zum Fehler kommen, wenn es keinen parent gibt?
-            s.start_time = s.parent.start_time + s.time
-            # is there already a step
-            col = detect_collision(schedule, s)
-            while col:
-                # as long as there is a collision with a second step move the first
-                s.start_time = col.start_time + col.time
-                col = detect_collision(schedule, s)
-            # add step to schedule
-            schedule.machines[s.machine_num].insert(
-                s, s.start_time, schedule.machines[s.machine_num].work[0].job)  # ???
