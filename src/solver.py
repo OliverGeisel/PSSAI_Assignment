@@ -18,37 +18,6 @@ path_deepness = 5
 # how long should a moved step be blocked
 block_time = 10
 
-# gives back the job with whom the collision appeared
-
-
-def detect_collision(schedule: Schedule, step: Step) -> Step:
-    for mw in schedule.machines[step.machine_num].work:
-        if step.start_time <= mw.start_time:
-            if mw.start_time < step.start_time + step.time:
-                return mw
-        elif step.start_time < mw.start_time + mw.time:
-            if mw.start_time < step.start_time + step.time:
-                return mw
-    return None
-
-
-# makes sure that all steps of one job are not starting before last one ended
-
-# Methode wird nicht benötigt
-# ------------------------------------------------------------------------------------
-def make_consistent(schedule: Schedule):
-    for j in schedule.jobs:
-        for s in j.steps:
-            next_step = j.steps[j.steps.index(s) + 1]
-            if s.start_time + s.time > next_step.start_time:
-                next_step.start_time = s.start_time + s.time
-                collision_step = detect_collision(schedule, next_step)
-                while collision_step:
-                    # as long as there is a collision with a second step move the first behind
-                    # not necessarily the wanted behaviour - to change later
-                    s.start_time = collision_step.start_time + collision_step.time
-                    collision_step = detect_collision(schedule, s)
-
 # checkes if there is a gap and moves step if possible
 # a gap is when the machine is idle for the time of the step and
 # the step doesn't have a parent that is too close
@@ -58,15 +27,14 @@ def gapcheck(schedule: Schedule):
     for j in schedule.jobs:
         for s in j.steps:
             current_machine = schedule.machines[s.machine_num]
-            slot_before_s = current_machine.work[current_machine.work.index(
-                s) - 1]
-            if slot_before_s.idle and s.parent.start_time + s.parent.time < s.start_time:
-                if slot_before_s.start_time > s.parent.start_time + s.parent.time:
-                    new_start = slot_before_s.start_time
+            slot_before_s = current_machine.work[s.start_time - 1]
+            if slot_before_s.step.idle and s.step.parent.start_time + s.step.parent.time < s.start_time:
+                if slot_before_s.step.start_time > s.step.parent.start_time + s.step.parent.time:
+                    new_start = slot_before_s.step.start_time
                 else:
-                    new_start = s.parent.start_time + s.parent.time
-                # TO-DO: find correct job
-                current_machine.setStep(new_start, s, schedule.jobs.index(0))
+                    new_start = s.step.parent.start_time + s.step.parent.time
+
+                current_machine.setStep(new_start, s.step, s.job)
 
     # for m in schedule.machines:
     #     for mw in m.work:
@@ -107,14 +75,20 @@ def solve(schedule: Schedule):
         last_schedules.append(origin_schedule)
 
         # maybe unblock jobs
-        for x in schedule.machines:
-            x.unblock_steps()
+        for j in schedule.jobs:
+            for s in j.steps:
+                if s.is_blocked:
+                    s.time_blocked = s.time_blocked - 1
+                if s.time_blocked == 0:
+                    s.is_blocked = False
 
         # --------------- Begin of solving logic ---------------
         # block every first job
-        for x in schedule.machines:
-            if x.work[0].start_time == 0:
-                x.block_step(x.work[0], 1)
+        for j in schedule.jobs:
+            first_step = j.steps[0]
+            if first_step.start_time == 0 and !first_step.is_blocked:
+                first_step.is_blocked = True
+                first_step.time_blocked = 1
 
         # find job that ends last
         latest_job = max(schedule.machines).work[-1].job
@@ -124,7 +98,7 @@ def solve(schedule: Schedule):
         first_step = latest_job.steps[step_number]
 
         # while first_step is a blocked one try another
-        while schedule.machines[first_step.machine_num].is_blocked(first_step):
+        while schedule.machines[first_step.machine_num].work[first_step.start_time].step.is_blocked:
             step_number = step_number + 1
             first_step = latest_job.steps[step_number]
             # if you got to the end change strategie
@@ -136,19 +110,17 @@ def solve(schedule: Schedule):
         # versuche den ersten step zu tauschen
 
         machine_were_on = first_step.machine_num
+        first_time_step = schedule.machines[machine_were_on].work[first_step.start_time].step
         # search for step before first step of latest job
-        index_of_step_to_change = schedule.machines.work.index(
-            first_step) - 1
-        step_to_change = schedule.machines[first_step.machine_num].work[index_of_step_to_change]
+        work_to_change = schedule.machines[first_step.machine_num].work[first_step.start_time - 1]
 
         # switch steps
         schedule.machines[machine_were_on].switch_steps(
-            step_to_change.start_time, step_to_change.time, first_step.start_time, first_step.time)
+            work_to_change, first_time_step)
         # remember the swiched steps
-        schedule.machines[machine_were_on].block_step(
-            step_to_change, block_time)
-        schedule.machines[machine_were_on].block_step(
-            first_step, block_time)
+        for x in [first_work_step, work_to_change]:
+            x.step.is_blocked = True
+            x.step.time_blocked = block_time
 
         # make schedule as condense as possible
         gapcheck(schedule)
@@ -156,6 +128,40 @@ def solve(schedule: Schedule):
 
 # Methode wird nicht hier benötigt
 # ------------------------------------------------------------------------------------
+
+
+# gives back the job with whom the collision appeared
+
+
+def detect_collision(schedule: Schedule, step: Step) -> Step:
+    for mw in schedule.machines[step.machine_num].work:
+        if step.start_time <= mw.start_time:
+            if mw.start_time < step.start_time + step.time:
+                return mw
+        elif step.start_time < mw.start_time + mw.time:
+            if mw.start_time < step.start_time + step.time:
+                return mw
+    return None
+
+
+# makes sure that all steps of one job are not starting before last one ended
+
+# Methode wird nicht benötigt
+# ------------------------------------------------------------------------------------
+def make_consistent(schedule: Schedule):
+    for j in schedule.jobs:
+        for s in j.steps:
+            next_step = j.steps[j.steps.index(s) + 1]
+            if s.start_time + s.time > next_step.start_time:
+                next_step.start_time = s.start_time + s.time
+                collision_step = detect_collision(schedule, next_step)
+                while collision_step:
+                    # as long as there is a collision with a second step move the first behind
+                    # not necessarily the wanted behaviour - to change later
+                    s.start_time = collision_step.start_time + collision_step.time
+                    collision_step = detect_collision(schedule, s)
+
+
 def initialize(schedule: Schedule):
     # Sort the jobs of the schedule to get longest first
     # Wie was genau ich sortieren muss weiß ich nicht
@@ -174,4 +180,4 @@ def initialize(schedule: Schedule):
                 col = detect_collision(schedule, s)
             # add step to schedule
             schedule.machines[s.machine_num].insert(
-                s, s.start_time, j)  # ???
+                s, s.start_time, schedule.machines[s.machine_num].work[].job)  # ???

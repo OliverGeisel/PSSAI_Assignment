@@ -9,7 +9,6 @@ class Machine:
         self.work = list()
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
-        self.blocked_steps = list(list(Step, int))
 
     @DeprecationWarning
     def append(self, step: Step, gap: int = 0) -> None:
@@ -71,20 +70,7 @@ class Machine:
         self.setStep(timestep1.step.start_time, timestep1.step.time, timestep1.job)
         self.setStep(timestep2.step.start_time, timestep2.step.time, timestep2.job)
 
-                    
-    def block_step(self, step: Step, time):
-        self.blocked_steps.append([step, time])
 
-    def unblock_steps(self):
-        for x in self.blocked_steps:
-            x[1] = x[1] -1
-            if x[1] == 0:
-                self.blocked_steps.remove(x)
-
-    def is_blocked(self, step: Step):
-        for x in self.blocked_steps:
-            if x[0] == step:
-                return True
 
 class CollisionInScheduleException(Exception):
 
