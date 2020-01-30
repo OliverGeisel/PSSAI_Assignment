@@ -24,4 +24,6 @@ Optimierungs-Ideen
 
 
 isPerfect() als Attribut in den Job
-isContinous() 
+isContinous()
+
+TODO aktualisiere step bei remove/insert
