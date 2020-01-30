@@ -33,7 +33,7 @@ class Schedule:
     def __insert_job_in_plan(self, job: Job) -> None:
         """Only for first step in plan"""
         for step in job.steps:
-            self.machines[step.machine_num].insert(step, step.start_time, job)
+            self.machines[step.machine_num].insert(step.start_time, step, job)
 
     def __add_new_job(self, job: Job):
         for step in job.steps:
@@ -41,22 +41,24 @@ class Schedule:
             match = False
             start_of_interval = step.start_time
             original_start_time = start_of_interval
+            # as long the step dosen't fit on the machine
             while not match:
-                if machine.end_time < step.start_time + step.time:
-                    machine.append_empty_timeSteps(step.start_time + step.time - machine.end_time)
                 interval_of_step = machine.work[start_of_interval: start_of_interval + step.time]
-                used_steps = [x for x in interval_of_step if x.job is not None]
-                if len(used_steps) > 0:
-                    last_step = used_steps[-1].step
+                occupied_steps = list(filter(lambda x: x.job is not None, interval_of_step))
+                if len(occupied_steps) > 0:  # check if there is an time_step occupied
+                    last_step = occupied_steps[-1].step
                     start_of_interval = last_step.start_time + last_step.time
                     continue
-                machine.insert(step, start_of_interval, job)
+                machine.insert( start_of_interval,step, job)
                 match = True
                 # update start_time of all following steps
                 start_of_update = job.steps.index(step)
                 offset = start_of_interval - original_start_time
                 for update_step in job.steps[start_of_update:]:
                     update_step.start_time += offset
+
+    def get_execute_time(self):
+        return max(self.machines).end_time
 
     def __str__(self):
         schedule = list()

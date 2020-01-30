@@ -13,3 +13,15 @@ class TimeStep:
         if self.job is None:
             return "Idle Step"
         return f"TimeStep for Job {self.job} and step_num {self.step_number}"
+
+    def __eq__(self, other):
+        if self is other:
+            return True
+
+        return self.job == other.job and \
+               self.step == other.step and \
+               self.step_number == other.step_number and \
+               self.type == other.type
+
+
+idle_timeStep = TimeStep(None, -1, None)
