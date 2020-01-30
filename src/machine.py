@@ -54,8 +54,8 @@ class Machine:
         start_time_cache = timestep1.step.start_time
         timestep1.step.start_time = timestep2.step.start_time
         timestep2.step.start_time = start_time_cache
-        self.insert(timestep1.step.time, timestep1.step.start_time,  timestep1.job)
-        self.insert(timestep2.step.time, timestep2.step.start_time,  timestep2.job)
+        self.insert(timestep1.step.start_time, timestep1.step,   timestep1.job)
+        self.insert(timestep2.step.start_time, timestep2.step,   timestep2.job)
 
 
 class CollisionInScheduleException(Exception):

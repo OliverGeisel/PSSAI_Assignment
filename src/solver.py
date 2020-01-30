@@ -2,7 +2,7 @@ from src.job import Step
 from src.schedule import Schedule
 from src.timeStep import TimeStep
 
-last_schedules = None
+last_schedules = list()
 
 # how many schedules should be compared
 # nur sinnvoll, wenn wir wissen, wir bewegen uns in die richtige Richtung. Ansonsten einfach alle behalten
@@ -63,16 +63,17 @@ def solve(schedule: Schedule):
         # Es fehlt die Tiefe eines Pfades; rekursion?
 
         # if the length of schedules is going to be too long delete first element
-        if len(last_schedules) >= stc:
+        if last_schedules is not None and len(last_schedules) >= stc:
             last_schedules.pop(0)
-
+        # append the schedule to list of schedules to compare
+        last_schedules.append(schedule.copy())
+        
         # Vergleiche Längen der schedules
         shortest_schedule = min(last_schedules)
-        if shortest_schedule <= schedule.min_time:
+        if shortest_schedule.get_execute_time() <= schedule.min_time:
             return shortest_schedule
 
-        # append the schedule to list of schedules to compare
-        last_schedules.append(schedule.copy)
+
 
         # maybe unblock jobs
         for j in schedule.jobs:
@@ -102,14 +103,14 @@ def solve(schedule: Schedule):
             step_number = step_number + 1
             first_step = latest_job.steps[step_number]
             # if you got to the end of job change strategie
-            if first_step == latest_job.steps[latest_job.steps.len()]:
+            if first_step == latest_job.steps[len(latest_job.steps)-1]:
                 # search for another step to change
                 pass
 
         # versuche den gefundenen step zu tauschen
 
         machine_were_on = first_step.machine_num
-        first_time_step = schedule.machines[machine_were_on].work[first_step.start_time].step
+        first_time_step = schedule.machines[machine_were_on].work[first_step.start_time]
         # search for step before first step of latest job
         work_to_change = schedule.machines[first_step.machine_num].work[first_step.start_time - 1]
 

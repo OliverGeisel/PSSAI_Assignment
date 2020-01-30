@@ -57,6 +57,9 @@ class Schedule:
                 for update_step in job.steps[start_of_update:]:
                     update_step.start_time += offset
 
+    def get_execute_time(self):
+        return max(self.machines).end_time
+
     def __str__(self):
         schedule = list()
         for machine in self.machines:
