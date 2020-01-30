@@ -65,16 +65,15 @@ class Machine:
     def __lt__(self, other):
         return other.end_time - self.end_time
 
-    def switch_steps(self, start_time1, time1, start_time2, time2):
-        self.removeStep(self,start_time1, time1)
-        self.removeStep(self,start_time2, time2)
-        self.setStep(self, start_time1,time1)
-        self.setStep(self, start_time2,time2)
-        pass
+    def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
+        self.removeStep(timestep1.step.start_time, timestep1.step.time)
+        self.removeStep(timestep2.step.start_time, timestep2.step.time)
+        self.setStep(timestep1.step.start_time, timestep1.step.time, timestep1.job)
+        self.setStep(timestep2.step.start_time, timestep2.step.time, timestep2.job)
 
                     
     def block_step(self, step: Step, time):
-        self.blocked_steps.append([job, time])
+        self.blocked_steps.append([step, time])
 
     def unblock_steps(self):
         for x in self.blocked_steps:
