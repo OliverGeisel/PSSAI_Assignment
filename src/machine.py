@@ -9,15 +9,6 @@ class Machine:
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
 
-    @DeprecationWarning
-    def append(self, step: Step, gap: int = 0) -> None:
-        if not gap:
-            idle = Step(gap, self.id, idle=True)
-            self.work.append(idle)
-        self.work.append(step)
-        self.end_time += gap + step.time
-        self.remove_double_idle()
-
     def insert(self,  start_time: int, step: Step, job: Job) -> None:
         if self.end_time < start_time + step.time:
             self.append_empty_timeSteps(start_time + step.time - self.end_time)
@@ -27,20 +18,7 @@ class Machine:
     def __remove_idle_at_end(self):
         while self.work[-1] is idle_timeStep:
             self.work.pop()
-        self.end_time
-
-    @DeprecationWarning
-    def remove_double_idle(self):
-        for index, step in enumerate(self.work):
-            if step.idle and self.work[index + 1].idle:
-                new_idle = Step(step.time + self.work[index + 1].time, self.id, idle=True)
-                self.work.pop(index)
-                self.work.pop(index)
-                self.work.insert(index, new_idle)
-                break
-
-    def split_None(self):
-        pass
+        self.end_time = len(self.work)
 
     def append_empty_timeSteps(self, timeSteps):
         for i in range(timeSteps):
@@ -75,7 +53,6 @@ class Machine:
         self.removeStep(timestep2.step.start_time, timestep2.step.time)
         self.insert(timestep1.step.time, timestep1.step.start_time,  timestep1.job)
         self.insert(timestep2.step.time, timestep2.step.start_time,  timestep2.job)
-
 
 
 class CollisionInScheduleException(Exception):
