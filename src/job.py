@@ -1,6 +1,6 @@
 class Step:
 
-    def __init__(self, machine_num: int, time: int, parent=None, start_time: int = 0, idle: bool = False):
+    def __init__(self, machine_num: int, time: int, parent=None, start_time: int = 0, idle: bool = False, is_blocked: bool = False):
         self.parent = parent
         self.time = time
         self.machine_num = machine_num
@@ -10,8 +10,12 @@ class Step:
         else:
             self.start_time = start_time
 
+        self.is_blocked = is_blocked
+        self.time_blocked = 0
     def __str__(self):
         return f"Step for machine {self.machine_num} with time {self.time}"
+
+
 
 
 class Job:

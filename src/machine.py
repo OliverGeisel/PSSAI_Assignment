@@ -10,6 +10,7 @@ class Machine:
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
 
+    @DeprecationWarning
     def append(self, step: Step, gap: int = 0) -> None:
         if not gap:
             idle = Step(gap, self.id, idle=True)
@@ -51,7 +52,7 @@ class Machine:
         for i in range(step.time):
             # Check ob bereits ein Job an der Stelle ist
             if len(self.work) <= start_time and self.work[start_time + i].step_num != -1:
-                raise CollisionInScheduleException(f"A Error occurred! The step {start_time + i} in machine {self.id}"
+                raise CollisionInScheduleException(f"An Error occurred! The step {start_time + i} in machine {self.id}"
                                                    f" is already placed! Job {self.work[start_time + i]} is there but"
                                                    f" {job} is wanted.")
             self.work[start_time + i] = time_step
@@ -68,6 +69,13 @@ class Machine:
 
     def __lt__(self, other):
         return other.end_time > self.end_time
+
+    def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
+        self.removeStep(timestep1.step.start_time, timestep1.step.time)
+        self.removeStep(timestep2.step.start_time, timestep2.step.time)
+        self.setStep(timestep1.step.start_time, timestep1.step.time, timestep1.job)
+        self.setStep(timestep2.step.start_time, timestep2.step.time, timestep2.job)
+
 
 
 class CollisionInScheduleException(Exception):
