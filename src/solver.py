@@ -74,7 +74,6 @@ def solve(schedule: Schedule):
             return shortest_schedule
 
 
-
         # maybe unblock jobs
         for j in schedule.jobs:
             for s in j.steps:
