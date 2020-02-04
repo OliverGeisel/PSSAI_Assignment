@@ -3,7 +3,6 @@ from src.timeStep import TimeStep, idle_timeStep
 
 
 class Machine:
-
     def __init__(self, id: int):
         self.work = list()
         self.id = id
@@ -29,7 +28,8 @@ class Machine:
         time_step = TimeStep(step, step_num, job)
         for i in range(step.time):
             # Check ob bereits ein Job an der Stelle ist
-            if len(self.work) <= start_time and self.work[start_time + i].step_num != -1:
+            if len(self.work) <= start_time and self.work[start_time +
+                                                          i].step_num != -1:
                 raise CollisionInScheduleException(
                     f"An Error occurred! The step {start_time + i} in machine {self.id}"
                     f" is already placed! Job {self.work[start_time + i]} is there but"
@@ -76,21 +76,43 @@ class Machine:
         self.insert(timestep2.step.start_time, timestep2.step, timestep2.job)
 
         for timestep in [timestep1, timestep2]:
-            step_endtime = timestep.step.start_time + timestep.step.time
-            # if step's endtime exceeds the upcoming step's start time
-            if step_endtime > timestep.job.steps[timestep.job.steps.index(timestep.step)+1]:
-                # look for all steps in the job
-                for step in timestep.job:
-                    parent_end = step.parent.start_time + step.parent.time
-                    # is there a collision
-                    if step.start_time < parent_end:
-                        for work_index in [parent_end, parent_end + step.time]:
-                                
+            step_endtime = timestep.step.get_end_time()
+            # if step's endtime exceeds the upcoming step's start time or its start time comes
+            # before parents end time
+            # TO-DO: ich bekomme damit nicht den richtigen timestep, denke ich
+            next_time_step = None
+            # anstatt: timestep.job.steps[
+            # timestep.job.steps.index(timestep.step) + 1].start_time
+            time_step_before = None
+            # anstatt: timestep.job.steps[
+            # timestep.job.steps.index(timestep.step) - 1].get_end_time()
+            if step_endtime > next_time_step.start_time:
+                __move__(next_time_step, step_endtime)
 
-                    self.insert(parent_end, step, timestep.job)
+            elif time_step_before.get_end_time() > step_endtime:
+                __move__(timestep, time_step_before.get_end_time())
+
+
+def __move__(self, t_step: TimeStep, start_time: int):
+    for len in [start_time, start_time + t_step.step.time]:
+        no_coll = True
+        if self.work[len] is not idle_timeStep and no_coll:
+            __move__(self.work.step, t_step.step.get_end_time())
+            no_coll = False
+    self.insert(start_time, t_step.step, t_step)
+
+    # hilf mir wie ich darauf komme:
+    t_next_step_start_time = 0
+    t_next_step = None
+    if t_step.step.get_end_time() > t_next_step_start_time:
+        __move__(t_next_step, t_step.step.get_end_time())
+
+    t_step_before = None
+    t_step_before_start_time = 0
+    if t_step.step.start_time < t_step_before_start_time:
+        __move__(t_step_before, t_step_before_start_time)
 
 
 class CollisionInScheduleException(Exception):
-
     def __init__(self, message):
         self.message = message
