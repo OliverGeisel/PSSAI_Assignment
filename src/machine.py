@@ -30,9 +30,10 @@ class Machine:
         for i in range(step.time):
             # Check ob bereits ein Job an der Stelle ist
             if len(self.work) <= start_time and self.work[start_time + i].step_num != -1:
-                raise CollisionInScheduleException(f"An Error occurred! The step {start_time + i} in machine {self.id}"
-                                                   f" is already placed! Job {self.work[start_time + i]} is there but"
-                                                   f" {job} is wanted.")
+                raise CollisionInScheduleException(
+                    f"An Error occurred! The step {start_time + i} in machine {self.id}"
+                    f" is already placed! Job {self.work[start_time + i]} is there but"
+                    f" {job} is wanted.")
             self.work[start_time + i] = time_step
         step.start_time = start_time
 

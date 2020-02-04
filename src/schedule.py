@@ -44,7 +44,8 @@ class Schedule:
             # as long the step dosen't fit on the machine
             while not match:
                 interval_of_step = machine.work[start_of_interval: start_of_interval + step.time]
-                occupied_steps = list(filter(lambda x: x.job is not None, interval_of_step))
+                occupied_steps = list(
+                    filter(lambda x: x.job is not None, interval_of_step))
                 if len(occupied_steps) > 0:  # check if there is an time_step occupied
                     last_step = occupied_steps[-1].step
                     start_of_interval = last_step.start_time + last_step.time
@@ -102,7 +103,8 @@ class Schedule:
                 current_machine = self.machines[step.machine_num]
                 if step.start_time == 0:
                     continue
-                start_of_idle = current_machine.get_start_of_idle(step.start_time - 1)
+                start_of_idle = current_machine.get_start_of_idle(
+                    step.start_time - 1)
                 if start_of_idle == -1:  # der "Bereich" davor ist kein idle
                     continue
                 end_time_parent = step.parent.get_end_time()
