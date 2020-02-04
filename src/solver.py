@@ -1,5 +1,7 @@
 # from src.job import Step
 from src.schedule import Schedule
+from src.timeStep import idle_timeStep
+
 # from src.timeStep import TimeStep
 
 last_schedules = list()
@@ -19,43 +21,16 @@ path_deepness = 5
 # how long should a moved step be blocked
 block_time = 10
 
-# checkes if there is a gap and moves step if possible
-# a gap is when the machine is idle for the time of the step and
-# the step doesn't have a parent that is too close
-
-
-def gapcheck(schedule: Schedule):
-    for j in schedule.jobs:
-        for s in j.steps:
-            current_machine = schedule.machines[s.machine_num]
-            slot_before_s = current_machine.work[s.start_time - 1]
-            print(slot_before_s)
-            # Ich hoffe, das ist dann auch ein Idle
-            if not slot_before_s and s.step.parent.start_time +\
-                    s.step.parent.time < s.start_time:
-                # TO-DO Wie finde ich denn den Anfang eines Idle raus?
-                if slot_before_s.step.start_time > s.step.parent.start_time +\
-                        s.step.parent.time:
-                    new_start = slot_before_s.step.start_time
-                else:
-                    new_start = s.step.parent.start_time + s.step.parent.time
-
-                current_machine.insert(new_start, s.step, s.job)
 
 
 def solve(schedule: Schedule):
-
-    for i in range(iterations):
+    for iteration in range(iterations):
 
         # Es fehlen weitere Abbruchbedingungen
 
         # if all jobs are perfectly fitted return the schedule
-        for x in schedule.jobs:
-            count = 0
-            if x.is_perfect:
-                count = count + 1
-            if count == len(schedule.jobs):
-                return schedule
+        if schedule.check_perfect():
+            return schedule
 
         # Es fehlt die Tiefe eines Pfades; rekursion?
 
@@ -72,24 +47,19 @@ def solve(schedule: Schedule):
             return shortest_schedule
 
         # maybe unblock jobs
-        for j in schedule.jobs:
-            for s in j.steps:
-                if s.is_blocked:
-                    s.time_blocked = s.time_blocked - 1
-                if s.time_blocked == 0:
-                    s.is_blocked = False
+        schedule.reduce_block_count()
 
         # --------------- Begin of solving logic ---------------
-        # block every first job
-        for j in schedule.jobs:
-            first_step = j.steps[0]
+        # block every first step
+        for job in schedule.jobs:
+            first_step = job.steps[0]
             if first_step.start_time == 0 and not first_step.is_blocked:
                 first_step.is_blocked = True
                 first_step.time_blocked = 1
 
         # sort machines
         machine_to_take_index = 0
-        sortet_machines = sorted(schedule.machines, reverse=True)
+        sorted_machines = sorted(schedule.machines, reverse=True)
 
         search = True
 
@@ -99,19 +69,18 @@ def solve(schedule: Schedule):
             end_of_job = False
             step_number = 0
             # find first step of longest job
-            latest_job = sortet_machines[machine_to_take_index].work[-1].job
+            latest_job = sorted_machines[machine_to_take_index].work[-1].job
             first_step = latest_job.steps[step_number]
 
             # while first_step is a blocked one or this or the step before is IdleStep try another
-            while not schedule.machines[first_step.machine_num].work[
-                    first_step.start_time].job and not schedule.machines[
-                        first_step.machine_num].work[
-                            first_step.start_time -
-                            1].job and not schedule.machines[
-                                first_step.machine_num].work[
-                                    first_step.
-                                    start_time].step.is_block and not end_of_job:
-                step_number = step_number + 1
+            current_machine_work = schedule.machines[first_step.machine_num].work
+            timeStep_step_blocked = current_machine_work[first_step.start_time].step.is_blocked
+            current_timeStep = current_machine_work[first_step.start_time]
+            timeStep_before = current_machine_work[first_step.start_time - 1]
+
+            while (idle_timeStep in [timeStep_before, current_timeStep] or timeStep_step_blocked) \
+                    and not end_of_job:
+                step_number += 1
                 first_step = latest_job.steps[step_number]
                 # if you got to the end of job take machine next longest
                 if first_step == latest_job.steps[len(latest_job.steps) - 1]:
@@ -140,12 +109,12 @@ def solve(schedule: Schedule):
             schedule.machines[machine_were_on].switch_steps(
                 work_to_change, first_time_step)
             # block the swiched steps
-            for x in [first_time_step, work_to_change]:
-                x.step.is_blocked = True
-                x.step.time_blocked = block_time
+            for job in [first_time_step, work_to_change]:
+                job.step.is_blocked = True
+                job.step.time_blocked = block_time
         else:
             print(
                 "Uh oh, there is a step that is Idle. How could that happen?")
 
         # make schedule as condense as possible
-        gapcheck(schedule)
+        schedule.gapcheck()

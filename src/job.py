@@ -9,18 +9,19 @@ class Step:
             self.start_time = parent.start_time + parent.time
         else:
             self.start_time = start_time
-
         self.is_blocked = is_blocked
         self.time_blocked = 0
+
+    def get_end_time(self):
+        return self.start_time + self.time
+
     def __str__(self):
         return f"Step for machine {self.machine_num} with time {self.time}"
 
 
-
-
 class Job:
 
-    def __init__(self, job_info: str, id):
+    def __init__(self, job_info: str, id: int):
         self.steps = list()
         self.id = id
         run_time = 0
@@ -64,4 +65,3 @@ class Job:
 
     def __str__(self):
         return f"Job with min_time {self.min_time} and a work_time of {self.get_work_time()}"
-

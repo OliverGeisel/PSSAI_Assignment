@@ -9,7 +9,7 @@ class Machine:
         self.id = id
         self.end_time = 0  # time the machine complete last step of all jobs
 
-    def insert(self,  start_time: int, step: Step, job: Job) -> None:
+    def insert(self, start_time: int, step: Step, job: Job) -> None:
         if self.end_time < start_time + step.time:
             self.append_empty_timeSteps(start_time + step.time - self.end_time)
         self.setStep(start_time, step, job)
@@ -36,9 +36,20 @@ class Machine:
             self.work[start_time + i] = time_step
         step.start_time = start_time
 
-    def removeStep(self, start_time, time):
+    def __remove_step(self, start_time, time):
         for i in range(time):
             self.work[start_time + i] = idle_timeStep
+        self.__remove_idle_at_end()
+
+    def removeStep(self, step: Step):
+        self.__remove_step(step.start_time, step.time)
+
+    def get_start_of_idle(self, index: int) -> int:
+        if self.work[index] is not idle_timeStep:
+            return -1
+        while self.work[index] is idle_timeStep and index > 0:
+            index -= 1
+        return index
 
     def get_start_of_step(self, step: Step):
         for index, time_step in enumerate(self.work):
@@ -49,13 +60,13 @@ class Machine:
         return other.end_time > self.end_time
 
     def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
-        self.removeStep(timestep1.step.start_time, timestep1.step.time)
-        self.removeStep(timestep2.step.start_time, timestep2.step.time)
+        self.removeStep(timestep1.step)
+        self.removeStep(timestep2.step)
         start_time_cache = timestep1.step.start_time
         timestep1.step.start_time = timestep2.step.start_time
         timestep2.step.start_time = start_time_cache
-        self.insert(timestep1.step.start_time, timestep1.step,   timestep1.job)
-        self.insert(timestep2.step.start_time, timestep2.step,   timestep2.job)
+        self.insert(timestep1.step.start_time, timestep1.step, timestep1.job)
+        self.insert(timestep2.step.start_time, timestep2.step, timestep2.job)
 
 
 class CollisionInScheduleException(Exception):

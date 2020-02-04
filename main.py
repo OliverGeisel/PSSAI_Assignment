@@ -14,6 +14,7 @@ def run(*args):
             machines.append(Machine(i))
         schedule = Schedule(task.jobs, machines)
         solve(schedule)
+        print("Fertig")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 import copy
 from typing import List
 
-from src.job import Job, Step
+from src.job import Job
 from src.machine import Machine
 
 
@@ -49,13 +49,22 @@ class Schedule:
                     last_step = occupied_steps[-1].step
                     start_of_interval = last_step.start_time + last_step.time
                     continue
-                machine.insert( start_of_interval,step, job)
+                machine.insert(start_of_interval, step, job)
                 match = True
                 # update start_time of all following steps
                 start_of_update = job.steps.index(step)
                 offset = start_of_interval - original_start_time
                 for update_step in job.steps[start_of_update:]:
                     update_step.start_time += offset
+
+    def reduce_block_count(self, amount=1):
+        for j in self.jobs:
+            for s in j.steps:
+                if s.is_blocked:
+                    s.time_blocked -= amount
+                    if s.time_blocked <= 0:
+                        s.is_blocked = False
+                        s.time_blocked = 0
 
     def get_execute_time(self):
         return max(self.machines).end_time
@@ -70,7 +79,37 @@ class Schedule:
                     schedule.append(f"{timeStep.job.id} ")
             schedule.append("\n")
         return f"The schedule for task looks like:\n" \
-               f"{''.join(schedule)}"
+               f"{''.join(schedule)} \n Time: {self.get_execute_time()}"
 
     def __lt__(self, other):
-        return min(self.machines) < min(other.machines)
+        return min(self.machines) < min(other.machines)  # TODO warum min?
+
+    def check_perfect(self) -> bool:
+        for job in self.jobs:
+            count = 0
+            if job.is_perfect():
+                count = count + 1
+            if count == len(self.jobs):
+                return True
+        return False
+
+    def gapcheck(self):
+        # checkes if there is a gap and moves step if possible
+        # a gap is when the machine is idle for the time of the step and
+        # the step doesn't have a parent that is too close
+        for job in self.jobs:
+            for step in job.steps:
+                current_machine = self.machines[step.machine_num]
+                if step.start_time == 0:
+                    continue
+                start_of_idle = current_machine.get_start_of_idle(step.start_time - 1)
+                if start_of_idle == -1:  # der "Bereich" davor ist kein idle
+                    continue
+                end_time_parent = step.parent.get_end_time()
+                if step.start_time > end_time_parent:
+                    diff = end_time_parent - start_of_idle
+                    new_start = start_of_idle
+                    if diff > 0:
+                        new_start += diff
+                    current_machine.removeStep(step)
+                    current_machine.insert(new_start, step, job)
