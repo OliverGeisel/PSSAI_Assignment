@@ -15,8 +15,8 @@ class Machine:
         self.setStep(start_time, step, job)
         self.end_time = len(self.work)
 
-    def __remove_idle_at_end(self):
-        while self.work[-1] is idle_timeStep:
+    def remove_idle_at_end(self):
+        while len(self.work) != 0 and self.work[-1] is idle_timeStep:
             self.work.pop()
         self.end_time = len(self.work)
 
@@ -40,7 +40,7 @@ class Machine:
     def __remove_step(self, start_time, time):
         for i in range(time):
             self.work[start_time + i] = idle_timeStep
-        self.__remove_idle_at_end()
+        self.remove_idle_at_end()
 
     def removeStep(self, step: Step):
         self.__remove_step(step.start_time, step.time)

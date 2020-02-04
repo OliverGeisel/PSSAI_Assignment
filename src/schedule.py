@@ -48,12 +48,12 @@ class Schedule:
                     filter(lambda x: x.job is not None, interval_of_step))
                 if len(occupied_steps) > 0:  # check if there is an time_step occupied
                     last_step = occupied_steps[-1].step
-                    start_of_interval = last_step.start_time + last_step.time
+                    start_of_interval = last_step.get_end_time()
                     continue
                 machine.insert(start_of_interval, step, job)
                 match = True
                 # update start_time of all following steps
-                start_of_update = job.steps.index(step)
+                start_of_update = job.steps.index(step)+1
                 offset = start_of_interval - original_start_time
                 for update_step in job.steps[start_of_update:]:
                     update_step.start_time += offset
@@ -108,7 +108,7 @@ class Schedule:
                     step.start_time - 1)
                 if start_of_idle == -1:  # der "Bereich" davor ist kein idle
                     continue
-                end_time_parent = step.parent.get_end_time()
+                end_time_parent = step.parent.get_end_time() if step.parent is not None else 0
                 if step.start_time > end_time_parent:
                     diff = end_time_parent - start_of_idle
                     new_start = start_of_idle

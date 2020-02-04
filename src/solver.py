@@ -1,8 +1,7 @@
 # from src.job import Step
 from src.schedule import Schedule
-from src.timeStep import idle_timeStep
 
-# from src.timeStep import TimeStep
+from src.timeStep import idle_timeStep
 
 last_schedules = list()
 
@@ -62,62 +61,32 @@ def solve(schedule: Schedule):
 
         # search till you've got two viable steps to change or there're no more machines
         # to take the steps from
-        while search:
-            end_of_job = False
-            step_number = 0
-            # find first step of longest job
-            latest_job = sorted_machines[machine_to_take_index].work[-1].job
-            first_step = latest_job.steps[step_number]
-
-            # while first_step is a blocked one or this or the step before is IdleStep try another
-            current_machine_work = schedule.machines[first_step.machine_num].work
-            # timeStep_step_blocked = current_machine_work[first_step.start_time]
-            current_timeStep = current_machine_work[first_step.start_time]
-            timeStep_before = current_machine_work[first_step.start_time - 1]
-
-            if current_machine_work.index(timeStep_before) == - 1:
-                timeStep_before = current_timeStep
-                current_timeStep = current_machine_work[first_step.start_time +
-                                                        first_step.time + 1]
-
-            while (idle_timeStep in [timeStep_before, current_timeStep] or
-                   current_timeStep.step.is_blocked) \
-                    and not end_of_job:
-                step_number += 1
-                first_step = latest_job.steps[step_number]
-                # if you got to the end of job take machine next longest
-                if first_step == latest_job.steps[len(latest_job.steps) - 1]:
-                    end_of_job = True
-                    machine_to_take_index = machine_to_take_index + 1
-                    if machine_to_take_index >= len(schedule.machines) - 1:
-                        # It seems that every step is blocked
-                        return min(last_schedules)
-            if not end_of_job:
-                search = False
-
-        # versuche den gefundenen step zu tauschen
-
-        machine_were_on = first_step.machine_num
-        first_time_step = schedule.machines[machine_were_on].work[
-            first_step.start_time]
-        # search for step before first step of latest job
-        work_to_change = schedule.machines[first_step.machine_num].work[
-            first_step.start_time - 1]
-
-        # switch steps
-        print("Steps to be switched:")
-        print("work: " + str(work_to_change))
-        print("first: " + str(first_time_step))
-        if work_to_change.job is not None and first_time_step.job is not None:
-            schedule.machines[machine_were_on].switch_steps(
-                work_to_change, first_time_step)
-            # block the swiched steps
-            for job in [first_time_step, work_to_change]:
-                job.step.is_blocked = True
-                job.step.time_blocked = block_time
-        else:
-            print(
-                "Uh oh, there is a step that is Idle. How could that happen?")
-
+        # get longest job
+        longest_job = max(schedule.machines).work[-1].job
+        # find gap between two steps
+        index = len(longest_job.steps)-1
+        current_step = longest_job.steps[index]
+        while index > 1:
+            step_before = current_step.parent
+            if step_before is not None and step_before.get_end_time() < current_step.start_time:
+                # swap start
+                current_machine = schedule.machines[current_step.machine_num]
+                timeStep_of_current = current_machine.work[current_step.start_time]
+                timeStep_before_current = current_machine.work[current_step.start_time-1]
+                if timeStep_before_current is not idle_timeStep:
+                    # versuche den gefundenen step zu tauschen
+                    # switch steps
+                    print("Steps to be switched:")
+                    print("work: " + str(timeStep_of_current))
+                    print("first: " + str(timeStep_before_current))
+                    current_machine.switch_steps(timeStep_before_current, timeStep_of_current)
+                    current_machine.remove_idle_at_end()
+                    # block the swiched steps
+                    for timeStep in [timeStep_before_current, timeStep_of_current]:
+                        timeStep.step.is_blocked = True
+                        timeStep.step.time_blocked = block_time
+                    break
+            current_step = step_before
+            index -= 1
         # make schedule as condense as possible
         schedule.gapcheck()
