@@ -86,13 +86,14 @@ class Schedule:
         return min(self.machines) < min(other.machines)  # TODO warum min?
 
     def check_perfect(self) -> bool:
+        count = 0
         for job in self.jobs:
-            count = 0
             if job.is_perfect():
                 count = count + 1
-            if count == len(self.jobs):
-                return True
-        return False
+        if count == len(self.jobs):
+            return True
+        else:
+            return False
 
     def gapcheck(self):
         # checkes if there is a gap and moves step if possible

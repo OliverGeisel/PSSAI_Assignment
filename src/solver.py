@@ -22,7 +22,6 @@ path_deepness = 5
 block_time = 10
 
 
-
 def solve(schedule: Schedule):
     for iteration in range(iterations):
 
@@ -31,8 +30,6 @@ def solve(schedule: Schedule):
         # if all jobs are perfectly fitted return the schedule
         if schedule.check_perfect():
             return schedule
-
-        # Es fehlt die Tiefe eines Pfades; rekursion?
 
         # if the length of schedules is going to be too long delete
         # first element
@@ -51,11 +48,11 @@ def solve(schedule: Schedule):
 
         # --------------- Begin of solving logic ---------------
         # block every first step
-        for job in schedule.jobs:
-            first_step = job.steps[0]
-            if first_step.start_time == 0 and not first_step.is_blocked:
-                first_step.is_blocked = True
-                first_step.time_blocked = 1
+        # for job in schedule.jobs:
+        #     first_step = job.steps[0]
+        #     if first_step.start_time == 0 and not first_step.is_blocked:
+        #         first_step.is_blocked = True
+        #         first_step.time_blocked = 1
 
         # sort machines
         machine_to_take_index = 0
@@ -74,11 +71,17 @@ def solve(schedule: Schedule):
 
             # while first_step is a blocked one or this or the step before is IdleStep try another
             current_machine_work = schedule.machines[first_step.machine_num].work
-            timeStep_step_blocked = current_machine_work[first_step.start_time].step.is_blocked
+            # timeStep_step_blocked = current_machine_work[first_step.start_time]
             current_timeStep = current_machine_work[first_step.start_time]
             timeStep_before = current_machine_work[first_step.start_time - 1]
 
-            while (idle_timeStep in [timeStep_before, current_timeStep] or timeStep_step_blocked) \
+            if current_machine_work.index(timeStep_before) == - 1:
+                timeStep_before = current_timeStep
+                current_timeStep = current_machine_work[first_step.start_time +
+                                                        first_step.time + 1]
+
+            while (idle_timeStep in [timeStep_before, current_timeStep] or
+                   current_timeStep.step.is_blocked) \
                     and not end_of_job:
                 step_number += 1
                 first_step = latest_job.steps[step_number]
@@ -86,7 +89,7 @@ def solve(schedule: Schedule):
                 if first_step == latest_job.steps[len(latest_job.steps) - 1]:
                     end_of_job = True
                     machine_to_take_index = machine_to_take_index + 1
-                    if machine_to_take_index >= len(schedule.machines) + 1:
+                    if machine_to_take_index >= len(schedule.machines) - 1:
                         # It seems that every step is blocked
                         return min(last_schedules)
             if not end_of_job:
