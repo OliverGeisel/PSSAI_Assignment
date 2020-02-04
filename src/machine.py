@@ -63,11 +63,31 @@ class Machine:
     def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
         self.removeStep(timestep1.step)
         self.removeStep(timestep2.step)
-        start_time_cache = timestep1.step.start_time
-        timestep1.step.start_time = timestep1.step.start_time + timestep2.step.time
-        timestep2.step.start_time = start_time_cache
+        if timestep1.step.start_time < timestep2.step.start_time:
+            start_time_cache = timestep1.step.start_time
+            timestep1.step.start_time = timestep1.step.start_time + timestep2.step.time
+            timestep2.step.start_time = start_time_cache
+        else:
+            start_time_cache = timestep2.step.start_time
+            timestep2.step.start_time = timestep2.step.start_time + timestep1.step.time
+            timestep1.step.start_time = start_time_cache
+
         self.insert(timestep1.step.start_time, timestep1.step, timestep1.job)
         self.insert(timestep2.step.start_time, timestep2.step, timestep2.job)
+
+        for timestep in [timestep1, timestep2]:
+            step_endtime = timestep.step.start_time + timestep.step.time
+            # if step's endtime exceeds the upcoming step's start time
+            if step_endtime > timestep.job.steps[timestep.job.steps.index(timestep.step)+1]:
+                # look for all steps in the job
+                for step in timestep.job:
+                    parent_end = step.parent.start_time + step.parent.time
+                    # is there a collision
+                    if step.start_time < parent_end:
+                        for work_index in [parent_end, parent_end + step.time]:
+                                
+
+                    self.insert(parent_end, step, timestep.job)
 
 
 class CollisionInScheduleException(Exception):
