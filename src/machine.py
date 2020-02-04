@@ -60,7 +60,8 @@ class Machine:
     def __lt__(self, other):
         return other.end_time > self.end_time
 
-    def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
+    def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep,
+                     timestep_to_block: TimeStep, time_to_block: int):
         self.removeStep(timestep1.step)
         self.removeStep(timestep2.step)
         if timestep1.step.start_time < timestep2.step.start_time:
@@ -79,21 +80,24 @@ class Machine:
             step_endtime = timestep.step.get_end_time()
             # if step's endtime exceeds the upcoming step's start time or its start time comes
             # before parents end time
-            # TO-DO: ich bekomme damit nicht den richtigen timestep, denke ich
-            next_time_step = None
-            # anstatt: timestep.job.steps[
-            # timestep.job.steps.index(timestep.step) + 1].start_time
-            time_step_before = None
-            # anstatt: timestep.job.steps[
-            # timestep.job.steps.index(timestep.step) - 1].get_end_time()
+            next_time_step = timestep.job.steps[
+                timestep.job.steps.index(timestep.step) + 1]
+
+            time_step_before = timestep.job.steps[
+                timestep.job.steps.index(timestep.step) - 1]
+
             if step_endtime > next_time_step.start_time:
                 __move__(next_time_step, step_endtime)
 
             elif time_step_before.get_end_time() > step_endtime:
                 __move__(timestep, time_step_before.get_end_time())
 
+        timestep_to_block.step.is_blocked = True
+        timestep_to_block.step.time_blocked = time_to_block
+
 
 def __move__(self, t_step: TimeStep, start_time: int):
+    # this loop handels all moving on one machine
     for len in [start_time, start_time + t_step.step.time]:
         no_coll = True
         if self.work[len] is not idle_timeStep and no_coll:
@@ -101,16 +105,14 @@ def __move__(self, t_step: TimeStep, start_time: int):
             no_coll = False
     self.insert(start_time, t_step.step, t_step)
 
-    # hilf mir wie ich darauf komme:
-    t_next_step_start_time = 0
-    t_next_step = None
-    if t_step.step.get_end_time() > t_next_step_start_time:
+    # those ifs handle the consistency
+    t_next_step = t_step.job.steps[t_step.job.steps.index(t_step.step) + 1]
+    if t_step.step.get_end_time() > t_next_step.start_time:
         __move__(t_next_step, t_step.step.get_end_time())
 
-    t_step_before = None
-    t_step_before_start_time = 0
-    if t_step.step.start_time < t_step_before_start_time:
-        __move__(t_step_before, t_step_before_start_time)
+    t_step_before = t_step.job.steps[t_step.job.steps.index(t_step.step) - 1]
+    if t_step.step.start_time < t_step_before:
+        __move__(t_step_before, t_step_before)
 
 
 class CollisionInScheduleException(Exception):
