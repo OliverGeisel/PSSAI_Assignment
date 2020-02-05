@@ -80,17 +80,25 @@ class Machine:
             step_endtime = timestep.step.get_end_time()
             # if step's endtime exceeds the upcoming step's start time or its start time comes
             # before parents end time
-            next_time_step = timestep.job.steps[
-                timestep.job.steps.index(timestep.step) + 1]
 
-            time_step_before = timestep.job.steps[
-                timestep.job.steps.index(timestep.step) - 1]
+            # out of range test before
+            if timestep.job.steps.index(
+                    timestep.step) < len(timestep.job.steps) - 1:
 
-            if step_endtime > next_time_step.start_time:
-                __move__(next_time_step, step_endtime)
+                next_time_step = timestep.job.steps[
+                    timestep.job.steps.index(timestep.step) + 1]
+                if step_endtime > next_time_step.start_time:
+                    __move__(next_time_step, step_endtime)
 
-            elif time_step_before.get_end_time() > step_endtime:
-                __move__(timestep, time_step_before.get_end_time())
+            elif timestep.job.steps.index(timestep.step) > 0:
+
+                time_step_before = timestep.job.steps[
+                    timestep.job.steps.index(timestep.step) - 1]
+                time_step_before_end_time = time_step_before.get_end_time()
+                if time_step_before.get_end_time() > step_endtime:
+                    print("Call __move__ with arguments " + str(timestep) +
+                          " and time " + str(time_step_before_end_time))
+                    __move__(timestep, time_step_before_end_time)
 
         timestep_to_block.step.is_blocked = True
         timestep_to_block.step.time_blocked = time_to_block
@@ -105,14 +113,19 @@ def __move__(self, t_step: TimeStep, start_time: int):
             no_coll = False
     self.insert(start_time, t_step.step, t_step)
 
-    # those ifs handle the consistency
-    t_next_step = t_step.job.steps[t_step.job.steps.index(t_step.step) + 1]
-    if t_step.step.get_end_time() > t_next_step.start_time:
-        __move__(t_next_step, t_step.step.get_end_time())
+    # those ifs handle the consistency and out of range
+    if t_step.job.steps.index(t_step.step) < len(t_step.job.steps) - 1:
 
-    t_step_before = t_step.job.steps[t_step.job.steps.index(t_step.step) - 1]
-    if t_step.step.start_time < t_step_before:
-        __move__(t_step_before, t_step_before)
+        t_next_step = t_step.job.steps[t_step.job.steps.index(t_step.step) + 1]
+        if t_step.step.get_end_time() > t_next_step.start_time:
+            __move__(t_next_step, t_step.step.get_end_time())
+
+    elif t_step.job.steps.index(t_step.step) > 0:
+
+        t_step_before = t_step.job.steps[t_step.job.steps.index(t_step.step) -
+                                         1]
+        if t_step.step.start_time < t_step_before:
+            __move__(t_step_before, t_step_before)
 
 
 class CollisionInScheduleException(Exception):
