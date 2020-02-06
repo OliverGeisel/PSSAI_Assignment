@@ -54,6 +54,8 @@ class Schedule:
                 match = True
                 # update start_time of all following steps
                 start_of_update = job.steps.index(step)+1
+                if start_of_update >= len(job.steps):
+                    continue
                 offset = start_of_interval - original_start_time
                 for update_step in job.steps[start_of_update:]:
                     update_step.start_time += offset
@@ -83,7 +85,7 @@ class Schedule:
                f"{''.join(schedule)} \n Time: {self.get_execute_time()}"
 
     def __lt__(self, other):
-        return min(self.machines) < min(other.machines)  # TODO warum min?
+        return max(self.machines) < max(other.machines) 
 
     def check_perfect(self) -> bool:
         count = 0
