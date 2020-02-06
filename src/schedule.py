@@ -108,11 +108,12 @@ class Schedule:
                     step.start_time - 1)
                 if start_of_idle == -1:  # der "Bereich" davor ist kein idle
                     continue
-                end_time_parent = step.parent.get_end_time()
-                if step.start_time > end_time_parent:
-                    diff = end_time_parent - start_of_idle
-                    new_start = start_of_idle
-                    if diff > 0:
-                        new_start += diff
-                    current_machine.removeStep(step)
-                    current_machine.insert(new_start, step, job)
+                if step.parent is not None:
+                    end_time_parent = step.parent.get_end_time()
+                    if step.start_time > end_time_parent:
+                        diff = end_time_parent - start_of_idle
+                        new_start = start_of_idle
+                        if diff > 0:
+                            new_start += diff
+                        current_machine.removeStep(step)
+                        current_machine.insert(new_start, step, job)
