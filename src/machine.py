@@ -3,7 +3,6 @@ from src.timeStep import TimeStep, idle_timeStep
 
 
 class Machine:
-
     def __init__(self, id: int):
         self.work = list()
         self.id = id
@@ -60,17 +59,29 @@ class Machine:
     def __lt__(self, other):
         return other.end_time > self.end_time
 
-    def switch_steps(self, timestep1: TimeStep, timestep2: TimeStep):
-        self.removeStep(timestep1.step)
-        self.removeStep(timestep2.step)
-        start_time_cache = timestep1.step.start_time
-        timestep1.step.start_time = timestep1.step.start_time + timestep2.step.time
-        timestep2.step.start_time = start_time_cache
-        self.insert(timestep1.step.start_time, timestep1.step, timestep1.job)
-        self.insert(timestep2.step.start_time, timestep2.step, timestep2.job)
+    def find_t_step_of_next_step(self, t_step: TimeStep):
+        if len(self.work) == t_step.step.get_end_time():
+            return t_step
+
+        i = t_step.step.get_end_time()
+        first_t_step_after = self.work[i]
+        while first_t_step_after is idle_timeStep:
+            i += 1
+            first_t_step_after = self.work[i]
+        return first_t_step_after
+
+    def find_t_step_of_step_before(self, t_step: TimeStep):
+        if t_step.step.start_time == 0:
+            return t_step
+
+        i = t_step.step.start_time
+        first_t_step_after = self.work[i]
+        while first_t_step_after is idle_timeStep:
+            i -= 1
+            first_t_step_after = self.work[i]
+        return first_t_step_after
 
 
 class CollisionInScheduleException(Exception):
-
     def __init__(self, message):
         self.message = message

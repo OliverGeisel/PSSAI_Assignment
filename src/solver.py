@@ -1,6 +1,5 @@
 # from src.job import Step
 from src.schedule import Schedule
-
 from src.timeStep import idle_timeStep
 
 last_schedules = list()

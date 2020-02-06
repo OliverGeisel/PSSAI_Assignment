@@ -1,6 +1,11 @@
 class Step:
-
-    def __init__(self, machine_num: int, time: int, parent=None, start_time: int = 0, idle: bool = False, is_blocked: bool = False):
+    def __init__(self,
+                 machine_num: int,
+                 time: int,
+                 parent=None,
+                 start_time: int = 0,
+                 idle: bool = False,
+                 is_blocked: bool = False):
         self.parent = parent
         self.time = time
         self.machine_num = machine_num
@@ -12,7 +17,7 @@ class Step:
         self.is_blocked = is_blocked
         self.time_blocked = 0
 
-    def get_end_time(self):
+    def get_end_time(self) -> int:
         return self.start_time + self.time
 
     def __str__(self):
@@ -20,7 +25,6 @@ class Step:
 
 
 class Job:
-
     def __init__(self, job_info: str, id: int):
         self.steps = list()
         self.id = id
