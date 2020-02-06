@@ -109,8 +109,7 @@ def solve(schedule: Schedule):
         print("work: " + str(work_to_change))
         print("first: " + str(first_time_step))
         if work_to_change.job is not None and first_time_step.job is not None:
-            schedule.machines[machine_were_on].switch_steps(
-                work_to_change, first_time_step, work_to_change, block_time)
+            schedule.switch_steps(work_to_change, first_time_step, work_to_change, block_time)
             # block the swiched steps
             for job in [first_time_step, work_to_change]:
                 job.step.is_blocked = True
