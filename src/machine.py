@@ -90,15 +90,16 @@ class Machine:
                 if step_endtime > next_time_step.start_time:
                     __move__(next_time_step, step_endtime)
 
-            elif timestep.job.steps.index(timestep.step) > 0:
+                if timestep.job.steps.index(timestep.step) > 0:
 
-                time_step_before = timestep.job.steps[
-                    timestep.job.steps.index(timestep.step) - 1]
-                time_step_before_end_time = time_step_before.get_end_time()
-                if time_step_before.get_end_time() > step_endtime:
-                    print("Call __move__ with arguments " + str(timestep) +
-                          " and time " + str(time_step_before_end_time))
-                    __move__(timestep, time_step_before_end_time)
+                    time_step_before = timestep.job.steps[
+                        timestep.job.steps.index(timestep.step) - 1]
+
+                    if time_step_before.get_end_time() > step_endtime:
+                        print("Call __move__ with arguments " + str(timestep) +
+                              " and time " +
+                              str(time_step_before.get_end_time()))
+                        __move__(timestep, )
 
         timestep_to_block.step.is_blocked = True
         timestep_to_block.step.time_blocked = time_to_block
@@ -120,12 +121,12 @@ def __move__(self, t_step: TimeStep, start_time: int):
         if t_step.step.get_end_time() > t_next_step.start_time:
             __move__(t_next_step, t_step.step.get_end_time())
 
-    elif t_step.job.steps.index(t_step.step) > 0:
+        if t_step.job.steps.index(t_step.step) > 0:
 
-        t_step_before = t_step.job.steps[t_step.job.steps.index(t_step.step) -
-                                         1]
-        if t_step.step.start_time < t_step_before:
-            __move__(t_step_before, t_step_before)
+            t_step_before = t_step.job.steps[
+                t_step.job.steps.index(t_step.step) - 1]
+            if t_step.step.start_time < t_step_before:
+                __move__(t_step_before, t_step_before)
 
 
 class CollisionInScheduleException(Exception):

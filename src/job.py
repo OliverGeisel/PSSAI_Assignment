@@ -17,7 +17,7 @@ class Step:
         self.is_blocked = is_blocked
         self.time_blocked = 0
 
-    def get_end_time(self):
+    def get_end_time(self) -> int:
         return self.start_time + self.time
 
     def __str__(self):
