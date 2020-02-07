@@ -23,6 +23,10 @@ class Step:
     def __str__(self):
         return f"Step for machine {self.machine_num} with time {self.time}"
 
+    def __hash__(self):
+        parent_hash = self.parent.__hash__() if self.parent is not None else 0
+        return self.parent.__hash__() + self.time << self.machine_num
+
 
 class Job:
     def __init__(self, job_info: str, id: int):

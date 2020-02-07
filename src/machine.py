@@ -22,6 +22,7 @@ class Machine:
     def append_empty_timeSteps(self, timeSteps):
         for i in range(timeSteps):
             self.work.append(idle_timeStep)
+        self.end_time = len(self.work)
 
     def setStep(self, start_time: int, step: Step, job: Job):
         step_num = job.steps.index(step) + 1
@@ -45,7 +46,7 @@ class Machine:
         self.__remove_step(step.start_time, step.time)
 
     def get_start_of_idle(self, index: int) -> int:
-        if self.work[index] is not idle_timeStep:
+        if index > len(self.work)-1 or self.work[index] is not idle_timeStep:
             return -1
         while self.work[index] is idle_timeStep and index > 0:
             index -= 1
