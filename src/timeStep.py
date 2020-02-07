@@ -23,5 +23,8 @@ class TimeStep:
                self.step_number == other.step_number and \
                self.type == other.type
 
+    def __hash__(self):
+        return self.step.__hash__()
+
 
 idle_timeStep = TimeStep(None, -1, None)
