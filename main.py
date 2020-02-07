@@ -15,13 +15,14 @@ to_iterations = 100
 from_block_time = 6
 to_block_time = 10
 
-time_list = list()
-schedule_list = list()
-iter_param = list()
-block_param = list()
+
 
 
 def solve_task(task):
+    time_list = list()
+    iter_param = list()
+    block_param = list()
+    schedule_list = list()
     start = time.time()
     machines = list()
     for i in range(task.machine_count):
