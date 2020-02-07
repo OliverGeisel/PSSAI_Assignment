@@ -37,7 +37,7 @@ def run(*args):
                 time_list.append(end - start)
                 iter_param.append(i)
                 block_param.append(block)
-            print(f"Iteration with {i} Iterations is over")
+            # print(f"Iteration with {i} Iterations is over")
 
         shortest_schedule = min(schedule_list)
         shortest_schedule_indizes = list()

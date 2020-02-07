@@ -31,7 +31,6 @@ def solve(schedule: Schedule, iterations: int, block_time: int):
             try_new_step(current_step, index, schedule, block_time)
         # then switch random steps
         else:
-            # switch random steps
             job_index = random.randint(0, len(schedule.jobs) - 1)
             random_job = schedule.jobs[job_index]
             step_index = random.randint(0, len(random_job.steps) - 1)
