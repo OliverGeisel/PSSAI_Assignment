@@ -12,7 +12,7 @@ to_iterations = 100
 
 # how long should a moved step be blocked
 from_block_time = 0
-to_block_time = 1
+to_block_time = 10
 
 time_list = list()
 schedule_list = list()
@@ -23,6 +23,7 @@ block_param = list()
 def run(*args):
     tasks = parse_tasks(args[1])
     for task in tasks:
+        start = time.time()
         machines = list()
         for i in range(task.machine_count):
             machines.append(Machine(i))
@@ -56,7 +57,8 @@ def run(*args):
         shortest_time = min(shortest_times)
         # get shortest schedule with smallest time needed
         fastest_schedule_index = time_list.index(shortest_time)
-
+        stop = time.time()
+        print(f"finisch task {task.name} in {stop-start}s")
         print(f"Fastest Schedule drawn took {shortest_time}s " +
               f"to calculate and had follwoing params:")
         print(f"Iterations: {iter_param[fastest_schedule_index]}")

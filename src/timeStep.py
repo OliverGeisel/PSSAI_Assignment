@@ -12,7 +12,7 @@ class TimeStep:
     def __str__(self):
         if self.job is None:
             return "Idle Step"
-        return f"TimeStep for Job {self.job} and step_num {self.step_number}"
+        return f"TimeStep for {self.job} and step_num {self.step_number}"
 
     def __eq__(self, other):
         if self is other:

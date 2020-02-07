@@ -72,4 +72,4 @@ class Job:
         return other.min_time > self.min_time
 
     def __str__(self):
-        return f"Job with min_time {self.min_time} and a work_time of {self.get_work_time()}"
+        return f"Job {self.id} with min_time {self.min_time} and a work_time of {self.get_work_time()}"

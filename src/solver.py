@@ -8,7 +8,7 @@ from src.timeStep import idle_timeStep
 def solve(schedule: Schedule, iterations: int, block_time: int):
     shortest_schedule = schedule.copy()
     for iteration in range(iterations):
-
+        # print(f"Start Iteration {iteration}")
         # if all jobs are perfectly fitted return the schedule
         if schedule.check_perfect():
             return schedule

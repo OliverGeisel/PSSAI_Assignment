@@ -44,7 +44,7 @@ class Schedule:
             # as long the step dosen't fit on the machine
             while not match:
                 interval_of_step = machine.work[
-                    start_of_interval:start_of_interval + step.time]
+                                   start_of_interval:start_of_interval + step.time]
                 occupied_steps = list(
                     filter(lambda x: x.job is not None, interval_of_step))
                 if len(occupied_steps
@@ -148,10 +148,8 @@ class Schedule:
             timestep2.step.start_time = timestep2.step.start_time + timestep1.step.time
             timestep1.step.start_time = start_time_cache
         # set new step positions
-        self.machines[timestep1.step.machine_num].insert(
-            timestep1.step.start_time, timestep1.step, timestep1.job)
-        self.machines[timestep2.step.machine_num].insert(
-            timestep2.step.start_time, timestep2.step, timestep2.job)
+        self.machines[timestep1.step.machine_num].insert(timestep1.step.start_time, timestep1.step, timestep1.job)
+        self.machines[timestep2.step.machine_num].insert(timestep2.step.start_time, timestep2.step, timestep2.job)
         # update all steps
         self.__update_steps_from_swap(timestep1, timestep2)
         # block step
@@ -212,56 +210,53 @@ class Schedule:
         # shift all steps in target range and update siblings
         t_step.step.start_time = start_time
         self.__update_following_steps(current_machine, start_time, t_step)
+        # insert step to new position
         current_machine.insert(start_time, t_step.step, t_step.job)
 
     def __update_following_steps(self, current_machine, start_time, t_step):
-        target_block_1 = self.__check_if_collision(current_machine, start_time,
-                                                   t_step)
+        """
+        replace all following steps that collides with t_step. t_step will not be inserted
+        :param current_machine:
+        :param start_time:
+        :param t_step:
+        :return:
+        """
+        collision_block = self.__check_if_collision(current_machine, start_time, t_step)
         # if there is a step in target then this step must also be shifted
         step_before = t_step
-        target_block = list()
-        # remove all time_steps from target_block
-        for time_step in target_block_1:
-            current_machine.removeStep(time_step.step)
-            target_block.append(time_step)
         # insert all steps to new positions
-        for following_time_step in target_block:
+        for following_time_step in collision_block:
             # calculate new start_time for step
             end_time_of_step_before = step_before.step.get_end_time()
+            # remove step, thats collide
             current_machine.removeStep(following_time_step.step)
-            new_start_for_following_step = end_time_of_step_before if end_time_of_step_before >\
-                following_time_step.step.start_time else following_time_step.step.start_time
-            self.__update_following_steps(current_machine,
-                                          new_start_for_following_step,
-                                          following_time_step)
-            current_machine.insert(new_start_for_following_step,
-                                   following_time_step.step,
-                                   following_time_step.job)
+            new_start_for_following_step = max(end_time_of_step_before, following_time_step.step.start_time)
+            following_time_step.step.start_time = new_start_for_following_step
+            # update following
+            self.__update_following_steps(current_machine, new_start_for_following_step, following_time_step)
+            # insert all updated steps
+            current_machine.insert(new_start_for_following_step, following_time_step.step, following_time_step.job)
             step_before = following_time_step
-        # now update all following steps of same job
-        target_block.append(t_step)
-        for time_step in target_block:
+        # add t_step for updating following step
+        collision_block = list(collision_block)
+        collision_block.insert(0, t_step)
+        # update all following steps of same job
+        for time_step in collision_block:
             child_step_index = time_step.job.steps.index(time_step.step) + 1
             if child_step_index >= len(time_step.job.steps):
                 continue
             child_step = time_step.job.steps[child_step_index]
-            child_time_step = self.machines[child_step.machine_num].work[
-                child_step.start_time]
-            new_start_time = child_time_step.step.start_time if child_time_step.step.start_time >\
-                time_step.step.get_end_time() else time_step.step.get_end_time()
+            child_time_step = self.machines[child_step.machine_num].work[child_step.start_time]
+            new_start_time = max(child_time_step.step.start_time, time_step.step.get_end_time())
             self.shift(child_time_step, new_start_time)
-        return target_block
+        return collision_block
 
     def __check_if_collision(self, current_machine, start_time, t_step):
         if len(current_machine.work) < start_time + t_step.step.time:
-            current_machine.append_empty_timeSteps(start_time +
-                                                   t_step.step.time -
-                                                   len(current_machine.work))
-        target_block = set(
-            filter(
-                lambda x: x != idle_timeStep,
-                current_machine.work[start_time:start_time +
-                                     t_step.step.time]))
+            current_machine.append_empty_timeSteps(start_time + t_step.step.time - len(current_machine.work))
+        target_block = set(filter(
+            lambda x: x != idle_timeStep,
+            current_machine.work[start_time:start_time + t_step.step.time]))
         return target_block
 
     def move(self, t_step: TimeStep, start_time: int):
@@ -296,4 +291,5 @@ class Schedule:
             if t_step.step.get_end_time() > t_next_step.step.start_time:
                 t_step.step.start_time = start_time
                 self.move(t_next_step, t_step.step.get_end_time())
+        # insert step to new position
         current_machine.insert(start_time, t_step.step, t_step.job)
