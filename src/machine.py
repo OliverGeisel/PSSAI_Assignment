@@ -15,7 +15,7 @@ class Machine:
         self.end_time = len(self.work)
 
     def remove_idle_at_end(self):
-        while len(self.work) != 0 and self.work[-1] is idle_timeStep:
+        while len(self.work) != 0 and self.work[-1] == idle_timeStep:
             self.work.pop()
         self.end_time = len(self.work)
 
@@ -29,7 +29,7 @@ class Machine:
         time_step = TimeStep(step, step_num, job)
         for i in range(step.time):
             # Check ob bereits ein Job an der Stelle ist
-            if len(self.work) <= start_time and self.work[start_time + i] is not idle_timeStep:
+            if len(self.work) <= start_time or self.work[start_time + i] != idle_timeStep:
                 raise CollisionInScheduleException(
                     f"An Error occurred! The step {start_time + i} in machine {self.id}"
                     f" is already placed! Job {self.work[start_time + i]} is there but"
@@ -38,6 +38,8 @@ class Machine:
         step.start_time = start_time
 
     def __remove_step(self, start_time, time):
+        if len(self.work) < start_time + time:
+            return
         for i in range(time):
             self.work[start_time + i] = idle_timeStep
         self.remove_idle_at_end()
@@ -46,9 +48,9 @@ class Machine:
         self.__remove_step(step.start_time, step.time)
 
     def get_start_of_idle(self, index: int) -> int:
-        if index > len(self.work)-1 or self.work[index] is not idle_timeStep:
+        if index > len(self.work)-1 or self.work[index] != idle_timeStep:
             return -1
-        while self.work[index] is idle_timeStep and index > 0:
+        while index > 0 and self.work[index-1] == idle_timeStep:
             index -= 1
         return index
 
@@ -66,7 +68,7 @@ class Machine:
 
         i = t_step.step.get_end_time()
         first_t_step_after = self.work[i]
-        while first_t_step_after is idle_timeStep:
+        while first_t_step_after == idle_timeStep:
             i += 1
             first_t_step_after = self.work[i]
         return first_t_step_after
@@ -77,7 +79,7 @@ class Machine:
 
         i = t_step.step.start_time
         first_t_step_after = self.work[i]
-        while first_t_step_after is idle_timeStep:
+        while first_t_step_after == idle_timeStep:
             i -= 1
             first_t_step_after = self.work[i]
         return first_t_step_after

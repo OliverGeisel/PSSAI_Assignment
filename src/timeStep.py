@@ -19,9 +19,9 @@ class TimeStep:
             return True
 
         return self.job == other.job and \
-            self.step == other.step and \
-            self.step_number == other.step_number and \
-            self.type == other.type
+               self.step == other.step and \
+               self.step_number == other.step_number and \
+               self.type == other.type
 
     def __hash__(self):
         return self.step.__hash__()
